@@ -40,8 +40,8 @@ async function getAccessToken() {
   }
 }
 
-// 🛒 1. API LẤY DANH SÁCH SẢN PHẨM
-app.get("/api/products", async (req, res) => {
+// 🛒 1. API LẤY DANH SÁCH SẢN PHẨM (Nhận cả /api/products và /products)
+app.get(["/api/products", "/products"], async (req, res) => {
   const token = await getAccessToken();
   if (!token) return res.status(500).json({ error: "Không thể lấy Token KiotViet" });
 
@@ -73,8 +73,8 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-// 👤 2. API TRA CỨU KHÁCH HÀNG THEO SỐ ĐIỆN THOẠI
-app.get("/api/customer", async (req, res) => {
+// 👤 2. API TRA CỨU KHÁCH HÀNG (Nhận cả /api/customer và /customer)
+app.get(["/api/customer", "/customer"], async (req, res) => {
   const { phone } = req.query;
   if (!phone) {
     return res.status(400).json({ error: "Vui lòng cung cấp số điện thoại (phone)" });
