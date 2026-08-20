@@ -40,6 +40,7 @@ async function getAccessToken() {
   }
 }
 
+// 🛒 1. API LẤY DANH SÁCH SẢN PHẨM
 app.get("/api/products", async (req, res) => {
   const token = await getAccessToken();
   if (!token) return res.status(500).json({ error: "Không thể lấy Token KiotViet" });
@@ -68,6 +69,48 @@ app.get("/api/products", async (req, res) => {
     res.status(500).json({ 
       error: "Lỗi kết nối dữ liệu KiotViet",
       details: err?.response?.data || err.message 
+    });
+  }
+});
+
+// 👤 2. API TRA CỨU KHÁCH HÀNG THEO SỐ ĐIỆN THOẠI
+app.get("/api/customer", async (req, res) => {
+  const { phone } = req.query;
+  if (!phone) {
+    return res.status(400).json({ error: "Vui lòng cung cấp số điện thoại (phone)" });
+  }
+
+  const token = await getAccessToken();
+  if (!token) return res.status(500).json({ error: "Không thể lấy Token KiotViet" });
+
+  try {
+    const response = await axios.get(`https://public.kiotapi.com/customers?contactNumber=${phone}`, {
+      headers: {
+        "Retailer": KIOTVIET_CONFIG.retailer,
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const customers = response.data.data;
+    if (!customers || customers.length === 0) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy khách hàng với SĐT này" });
+    }
+
+    const customer = customers[0];
+    res.json({
+      success: true,
+      customer: {
+        id: customer.id,
+        code: customer.code,
+        name: customer.name,
+        phone: customer.contactNumber,
+        point: customer.point || 0
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: "Lỗi tra cứu khách hàng từ KiotViet",
+      details: err?.response?.data || err.message
     });
   }
 });
